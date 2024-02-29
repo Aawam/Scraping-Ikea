@@ -202,7 +202,6 @@ def get_products(soup,index):
         .find("div", class_='productList-content d-flex flex-wrap')
     data = database.find_all("div", class_='col-6 col-md-4 col-lg-3 p-0 itemBlock')
     
-    
     final_result = []
     
     try:
@@ -286,9 +285,10 @@ def get_products(soup,index):
             time.sleep(5)
         
     except Exception as e:
-        print(f"Error accessing content {item} : {e}")
+        index += 1
+        print(f"Error accessing content {index} : {e}")
     
-    return final_result
+    return final_result, index
 
 def save_xlsx(data):
     df = pd.DataFrame(data)
@@ -308,6 +308,7 @@ def main():
         print(f"Accessing page : {i}")
         try:
             final = get_products(soup, index)
+            index += index
             products.extend(final)
         except Exception as e:
             print(f"Error accessing page {i} : {e}")
