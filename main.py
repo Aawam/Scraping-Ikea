@@ -224,10 +224,10 @@ def get_products(soup,index):
             short_desc = desc_access.find("h1")\
                 .find("span", class_='itemFacts font-weight-normal').get_text(strip=True)
             price = desc_access.find("div", class_='itemPrice-wrapper')\
-                .find("span", class_='currency').next_sibling.get_text(strip=True)
-            final_price = (f"IDR {price}")
+                .find("span", class_='currency').next_sibling.get_text(strip=True)\
+                .replace(".", "")
             purchased = desc_access.find("p", class_='partNumber').get_text(strip=True)\
-                .replace(" orang telah membeli produk ini", " Purchased")
+                .replace(" orang telah membeli produk ini", "")
 
             #additional access
             prod_details = soup_link.find("div", id='modal-product-details')\
@@ -275,19 +275,20 @@ def get_products(soup,index):
                 "Advantage" : final_advantage,
                 "Material" : material,
                 "Measurements" : final_measurements,
-                "Price" : final_price,
-                "Number Purchased" : purchased 
+                "Price (IDR)" : int(price),
+                "Number Purchased" : int(purchased) 
             }
 
             final_result.append(result)
             print(f"---This is content no {index}----")
             index += 1
-            time.sleep(5)
+            #time.sleep(2)
         
     except Exception as e:
         index += 1
         print(f"Error accessing content {index} : {e}")
-    
+        #time.sleep(2)
+
     return final_result, index
 
 def save_xlsx(data):
@@ -307,9 +308,10 @@ def main():
     for i in range(1, max_page + 1):
         print(f"Accessing page : {i}")
         try:
-            final = get_products(soup, index)
-            index += index
+            final,index = get_products(soup, index)
             products.extend(final)
+            print(index)
+            #time.sleep(1)
         except Exception as e:
             print(f"Error accessing page {i} : {e}")
 
