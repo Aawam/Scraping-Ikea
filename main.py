@@ -237,6 +237,7 @@ def get_products(soup,index):
             num_article = prod_details.find("div", class_='partNumber my-2 d-inline-flex flex-column')\
                 .find("span", class_='item-code')\
                 .get_text(strip=True)
+
             long_desc = prod_details.find("div", class_='product-desc-wrapper mb-4')\
                 .find("p").get_text(strip=True)
             material = prod_details.find("div", class_='modal-accordeon mt-5')\
@@ -278,18 +279,46 @@ def get_products(soup,index):
                 "Price (IDR)" : int(price),
                 "Number Purchased" : int(purchased) 
             }
-
+            
             final_result.append(result)
             print(f"---This is content no {index}----")
             index += 1
-            #time.sleep(2)
-        
+            time.sleep(1)
+            
+            """
+            try:
+                for z in result:
+                    if z["No Article"] not in result:
+                        final_result.append(result)
+                        print(f"---This is content no {index}----")
+                        index += 1
+                        #print(final_result)
+                        time.sleep(2)
+            except:
+                index += 1
+                print(f"This content is already written")
+                time.sleep(2)
+            
+        final_products = []
+        yes = 1
+        for z in final_result:
+            if z["No Article"] not in [a["No Article"] for a in final_products]:
+                final_products.append(z)
+                print(f"This content {yes} will be added")
+                yes += 1 
+            else:
+                final_products.append("None")
+                print(f"This content {yes} is already written")
+                yes += 1
+        """
     except Exception as e:
         index += 1
         print(f"Error accessing content {index} : {e}")
-        #time.sleep(2)
+        time.sleep(2)
+    
+    print(final_result)
 
-    return final_result, index
+    return final_result, int(index)
 
 def save_xlsx(data):
     df = pd.DataFrame(data)
@@ -298,25 +327,38 @@ def save_xlsx(data):
 
 def main():
 
-    products = []
+    final_products, products = [], []
 
     browser = initialize("https://www.ikea.co.id/in/produk/perabot-kamar-mandi?sort=SALES")
     soup = get_html(browser)
     
     max_page = get_max_page(soup)
-    index = 1
-    for i in range(1, max_page + 1):
+    index, count = 1, 1
+    for i in range(1, 3):
         print(f"Accessing page : {i}")
         try:
             final,index = get_products(soup, index)
             products.extend(final)
             print(index)
-            #time.sleep(1)
+            time.sleep(1)
         except Exception as e:
             print(f"Error accessing page {i} : {e}")
 
-    print(len(products))
-    save_xlsx(products)
+    for item in products:
+        if item["Name"] not in [loot["Name"] for loot in final_products]:
+            final_products.append(item)
+            
+            print(f"Item no {count} has been added")
+            count += 1
+
+            time.sleep(0.5)
+        else:
+            print(f"Item no {count} already written")
+            count += 1
+            time.sleep(0.5)
+
+    print(len(final_products))
+    save_xlsx(final_products)
 
 """
     for i in range(1, max_page + 1):
