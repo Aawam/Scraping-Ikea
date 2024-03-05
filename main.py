@@ -314,9 +314,7 @@ def get_products(soup,index):
     except Exception as e:
         index += 1
         print(f"Error accessing content {index} : {e}")
-        time.sleep(2)
-    
-    print(final_result)
+        time.sleep(1)
 
     return final_result, int(index)
 
@@ -334,7 +332,7 @@ def main():
     
     max_page = get_max_page(soup)
     index, count = 1, 1
-    for i in range(1, 3):
+    for i in range(1, max_page + 1):
         print(f"Accessing page : {i}")
         try:
             final,index = get_products(soup, index)
@@ -344,19 +342,24 @@ def main():
         except Exception as e:
             print(f"Error accessing page {i} : {e}")
 
-    for item in products:
-        if item["Name"] not in [loot["Name"] for loot in final_products]:
-            final_products.append(item)
-            
-            print(f"Item no {count} has been added")
-            count += 1
-
-            time.sleep(0.5)
-        else:
-            print(f"Item no {count} already written")
-            count += 1
-            time.sleep(0.5)
-
+    for i in products:
+        final_products.append(i)
+    
+    for i in products:
+        try:
+            if i["No Article"] not in [item["No Article"] for item in final_products]:
+                final_products.append(i)
+                print(f"Item no {count} has been added")
+                count += 1
+                time.sleep(0.5)
+            else:
+                print(f"Item no {count} already written")
+                count += 1
+                time.sleep(0.5)
+        except:
+            print(i)
+            print(type(i))
+        
     print(len(final_products))
     save_xlsx(final_products)
 
@@ -392,6 +395,7 @@ def main2():
         time.sleep(20)
 
     return print(all_data)
+
 """
 
 if __name__ == '__main__':

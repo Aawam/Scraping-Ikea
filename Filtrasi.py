@@ -19,7 +19,7 @@ for i in numbers:
     output.append(i)
 
 print(output)
-"""
+
 
 numbers = [{"num": i} for i in range(0, 10)]
 numbers.append({"num": 1})
@@ -30,3 +30,21 @@ for i in numbers:
         output.append(i["num"])
 
 print(output)
+"""
+final_result = [
+    {"No": 1, "Name": 'A'},
+    {"No": 2, "Name": 'B'},
+    {"No": 3, "Name": 'C'},
+    {"No": 3, "Name": 'D'},
+    {"No": 4, "Name": 'D'}
+]
+
+final_products = []
+
+for z in final_result:
+    if z["Name"] not in [item["Name"] for item in final_products]:
+        final_products.append(z)
+    else:
+        print("This content is already written")
+
+print(final_products)
