@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 import requests
 import pandas as pd
 import time
@@ -7,11 +8,49 @@ import time
 """
 #Starting Iniialize code
 browser = webdriver.Chrome()
-browser.get("https://www.ikea.co.id/in/produk/perabot-kamar-mandi")
+
+browser.get("https://www.ikea.co.id/in")
+
+button = browser.find_element(By.TAG_NAME, 'aside')\
+    .find_element(By.CLASS_NAME, 'sidebar-wrapper')\
+    .find_element(By.CLASS_NAME, 'sidebar-menu-main-heading')\
+    .find_element(By.TAG_NAME, 'b')
+button.click
+
 time.sleep(5)
+
+button2 = browser.find_element(By.TAG_NAME, 'aside')\
+    .find_element(By.CLASS_NAME, 'sidebar-wrapper')\
+    .find_element(By.CLASS_NAME, 'sidebar-menu.products')\
+    .find_element(By.TAG_NAME, 'b')
+button2.click
+
+if button2.is_enabled():
+    print("Correct")
+else:
+    print("Wrong")
+
+time.sleep(5)
+
 html = browser.page_source
 soup = BeautifulSoup(html, 'html.parser')
 
+products = soup.find("body")\
+    .find("div", id = 'sidenavWrapper')\
+    .find("aside", id ='sidebar-main-menu')\
+    .find("div", class_='sidebar-wrapper')\
+    .find("div", class_='sidebar-menu ra')
+
+if products:
+    print("Correct")
+else:
+    print("Wrong")
+
+print(products)
+
+browser.quit()
+"""
+"""
 max_page: list[BeautifulSoup] = soup.find("ul", class_='pagination mb-0')\
     .find_all("li", class_="page-item")
 max_page_number = int(max_page[-2].find("a").get_text())
@@ -177,8 +216,8 @@ for item in data:
 
 df = pd.DataFrame(final_result)
 df.to_excel("output.xlsx", index=False)
-
 """
+
 
 def initialize(url):
     browser = webdriver.Chrome()
@@ -266,7 +305,7 @@ def get_products(soup,index):
             final_measurements = ' '.join(m.get_text(strip=True) for m in measurements)
 
             #Result_Product
-            result = {
+            result = [{
                 "No" : index,
                 "Name" : name,
                 "Link" : final_link,
@@ -278,60 +317,61 @@ def get_products(soup,index):
                 "Measurements" : final_measurements,
                 "Price (IDR)" : int(price),
                 "Number Purchased" : int(purchased) 
-            }
-            
-            final_result.append(result)
+            }]
+            final_result.extend(result)
             print(f"---This is content no {index}----")
             index += 1
-            time.sleep(1)
-            
-            """
-            try:
-                for z in result:
-                    if z["No Article"] not in result:
-                        final_result.append(result)
-                        print(f"---This is content no {index}----")
-                        index += 1
-                        #print(final_result)
-                        time.sleep(2)
-            except:
-                index += 1
-                print(f"This content is already written")
-                time.sleep(2)
-            
-        final_products = []
-        yes = 1
-        for z in final_result:
-            if z["No Article"] not in [a["No Article"] for a in final_products]:
-                final_products.append(z)
-                print(f"This content {yes} will be added")
-                yes += 1 
-            else:
-                final_products.append("None")
-                print(f"This content {yes} is already written")
-                yes += 1
-        """
+            time.sleep(0.5)
     except Exception as e:
         index += 1
         print(f"Error accessing content {index} : {e}")
-        time.sleep(1)
 
     return final_result, int(index)
+
+def read_xlsx(filename):
+    df = pd.read_excel(filename)
+    df = df.to_dict(orient="records")
+    return df
 
 def save_xlsx(data):
     df = pd.DataFrame(data)
     df.to_excel("output.xlsx", index=False)
+    print("Saved")
     return df
+
+#def ma():
+    keyword = []
+    products = []
+
+    inputs = read_xlsx("input.xlsx")
+
+    index, count = 1,1
+
+    for i in inputs:
+        if i ["is_scrape"] == 1:
+            keyword.append(i["keyword"])
+
+    for key in keyword:
+        browser = initialize(f"https://www.ikea.co.id/in/produk/{key}?sort=SALES")
+        soup = get_html(browser)
+
+        max_page = get_max_page(soup)
+        for i in range(1, max_page + 1):
+            pass
 
 def main():
 
-    final_products, products = [], []
+    final_products = []
+    products = []
+
 
     browser = initialize("https://www.ikea.co.id/in/produk/perabot-kamar-mandi?sort=SALES")
     soup = get_html(browser)
     
     max_page = get_max_page(soup)
-    index, count = 1, 1
+    index = 1
+    count = 1
+
     for i in range(1, max_page + 1):
         print(f"Accessing page : {i}")
         try:
@@ -342,13 +382,10 @@ def main():
         except Exception as e:
             print(f"Error accessing page {i} : {e}")
 
-    for i in products:
-        final_products.append(i)
-    
-    for i in products:
+    for y in products:
         try:
-            if i["No Article"] not in [item["No Article"] for item in final_products]:
-                final_products.append(i)
+            if y["No Article"] not in [item["No Article"] for item in final_products]:
+                final_products.append(y)
                 print(f"Item no {count} has been added")
                 count += 1
                 time.sleep(0.5)
@@ -357,46 +394,11 @@ def main():
                 count += 1
                 time.sleep(0.5)
         except:
-            print(i)
-            print(type(i))
+            print(y)
+            print(type(y))
         
     print(len(final_products))
     save_xlsx(final_products)
-
-"""
-    for i in range(1, max_page + 1):
-        print(f"Accessing page : {i}")
-        soup_page = get_html(f"https://www.ikea.co.id/in/produk/perabot-kamar-mandi?sort=SALES&page={i}")
-        
-        products = get_products(soup_page)
-        products_items.extend(products)
-    
-    print(len(products_items))
-
-    save_xlsx(products_items)
-
-def main2():
-    #products_items, list_products = [], []
-
-    all_data = []
-
-    browser = initialize("https://www.ikea.co.id/in/produk/perabot-kamar-mandi?sort=SALES")
-    soup = get_html(browser)
-
-    max_page = get_max_page(soup)
-
-    for i in range(1, max_page + 1):
-        print(f"Accessing page : {i}")
-        url = (f"https://www.ikea.co.id/in/produk/perabot-kamar-mandi?sort=SALES&page={i}")
-        browser.get(url)
-        soup_page = get_html(browser)
-        page_data = get_content2(soup_page)
-        all_data.append(page_data)
-        time.sleep(20)
-
-    return print(all_data)
-
-"""
 
 if __name__ == '__main__':
     main()

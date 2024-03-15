@@ -31,19 +31,26 @@ for i in numbers:
 
 print(output)
 """
-final_result = [
-    {"No": 1, "Name": 'A'},
-    {"No": 2, "Name": 'B'},
-    {"No": 3, "Name": 'C'},
-    {"No": 3, "Name": 'D'},
-    {"No": 4, "Name": 'D'}
+result = [
+    {"No": 1, "Name": 'A', 'Class': 2},
+    {"No": 2, "Name": 'B', 'Class': 1},
+    {"No": 3, "Name": 'C', 'Class': 3}
 ]
+
+result2 = [
+    {"No": 3, "Name": 'D', 'Class': 2},
+    {"No": 4, "Name": 'D', 'Class': 3},
+    {"No": 5, "Name": 'A', 'Class': 4}
+]
+
+result.extend(result2)  # Merging result and result2 into final_result
 
 final_products = []
 
-for z in final_result:
-    if z["Name"] not in [item["Name"] for item in final_products]:
+for z in result:
+    if z["Class"] not in [item["Class"] for item in final_products]:
         final_products.append(z)
+        print("This Content will be written")
     else:
         print("This content is already written")
 
